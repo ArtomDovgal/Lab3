@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Список пасажирів</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+    <h2>Список пасажирів</h2>
+    <form name="passengerForm">
+        <input type="hidden" name="id" value="0" />
+        <div class="form-group">
+            <label for="firstname">Ім'я:</label>
+            <input class="form-control" name="firstname" />
+        </div>
+        <div class="form-group">
+            <label for="lastname">Прізвище:</label>
+            <input class="form-control" name="lastname" />
+        </div>
+        <div class="form-group">
+            <label for="age">Вік:</label>
+            <input class="form-control" name="age" />
+        </div>
+        <div class="form-group">
+            <label for="phone">Номер:</label>
+            <input class="form-control" name="phone" />
+        </div>
+        <div class="form-group">
+            <label for="type">Тип:</label>
+            <select class = "form-control" name="type">
+                <option value="Common">Common</option>
+                <option value="Business">Business</option>
+                <option value="Luxury">Luxury</option>
+              </select>
+        </div>
+        <div class="panel-body">
+            <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+            <a id="reset" class="btn btn-sm btn-primary">Сбросить</a>
+        </div>
+    </form>
+    <table class="table table-condensed table-striped table-bordered">
+        <thead><tr><th>Id</th><th>Ім'я</th><th>Прізвище</th><th>Вік</th><th>Номер</th><th>Тип</th><th></th></tr></thead>
+        <tbody>
+        </tbody>
+    </table>
+   
+    <script>
+
+        async function GetPassengers() {
+            const response = await fetch("/api/passengers", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                // получаем данные
+                const passengers = await response.json();
+                let rows = document.querySelector("tbody"); 
+                passengers.forEach(passenger => {
+                    // добавляем полученные элементы в таблицу
+                    rows.append(row(passenger));
+                });
+            }
+        }
+
+        async function GetPassenger(id) {
+            const response = await fetch("/api/passengers/" + id, {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const passenger = await response.json();
+                const form = document.forms["passengerForm"];
+                form.elements["id"].value = passenger._id;
+                form.elements["firstname"].value = passenger.firstname;
+                form.elements["lastname"].value = passenger.lastname;
+                form.elements["age"].value = passenger.age;
+                form.elements["phone"].value = passenger.phone;
+                form.elements["type"].value = passenger.type;
+            }
+        }
+
+        async function CreatePassenger(passengerFirstName, passengerLastName, passengerAge, passengerPhone, passengerType) {
+  
+            const response = await fetch("api/passengers", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    firstname: passengerFirstName,
+                    lastname:passengerLastName,
+                    age: parseInt(passengerAge, 10),
+                    phone: parseInt(passengerPhone, 10),
+                    type: passengerType
+                })
+            });
+            if (response.ok === true) {
+                const passenger = await response.json();
+                reset();
+                document.querySelector("tbody").append(row(passenger));
+            }
+        }
+
+        async function EditPassenger(passengerId, passengerFirstName, passengerLastName, passengerAge, passengerPhone, passengerType) {
+            const response = await fetch("api/passengers", {
+                method: "PUT",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: passengerId,
+                    firstname: passengerFirstName,
+                    lastname: passengerLastName,
+                    age: parseInt(passengerAge, 10),
+                    phone: parseInt(passengerPhone, 12),
+                    type: passengerType
+                })
+            });
+            if (response.ok === true) {
+                const passenger = await response.text();
+                reset();
+                document.querySelector("tr[data-rowid='" + passenger._id + "']").replaceWith(row(passenger));
+            }
+        }
+
+        async function DeletePassenger(id) {
+            const response = await fetch("/api/passengers/" + id, {
+                method: "DELETE",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const passenger = await response.json();
+                document.querySelector("tr[data-rowid='" + passenger._id + "']").remove();
+            }
+        }
+  
+        function reset() {
+            const form = document.forms["passengerForm"];
+            form.reset();
+            form.elements["id"].value = 0;
+        }
+
+        function row(passenger) {
+  
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-rowid", passenger._id);
+  
+            const idTd = document.createElement("td");
+            idTd.append(passenger._id);
+            tr.append(idTd);
+  
+            const firstnameTd = document.createElement("td");
+            firstnameTd.append(passenger.firstname);
+            tr.append(firstnameTd);
+
+            const lastnameTd = document.createElement("td");
+            lastnameTd.append(passenger.lastname);
+            tr.append(lastnameTd);
+  
+            const ageTd = document.createElement("td");
+            ageTd.append(passenger.age);
+            tr.append(ageTd);
+
+            const phoneTd = document.createElement("td");
+            phoneTd.append(passenger.phone);
+            tr.append(phoneTd);
+
+            const typeTd = document.createElement("td");
+            typeTd.append(passenger.type);
+            tr.append(typeTd);
+              
+            const linksTd = document.createElement("td");
+  
+            const editLink = document.createElement("a");
+            editLink.setAttribute("data-id", passenger._id);
+            editLink.setAttribute("style", "cursor:pointer;padding:15px;");
+            editLink.append("Редагувати");
+            editLink.addEventListener("click", e => {
+  
+                e.preventDefault();
+                GetPassenger(passenger._id);
+            });
+            linksTd.append(editLink);
+  
+            const removeLink = document.createElement("a");
+            removeLink.setAttribute("data-id", passenger._id);
+            removeLink.setAttribute("style", "cursor:pointer;padding:15px;");
+            removeLink.append("Видалити");
+            removeLink.addEventListener("click", e => {
+  
+                e.preventDefault();
+                DeletePassenger(passenger._id);
+            });
+  
+            linksTd.append(removeLink);
+            tr.appendChild(linksTd);
+  
+            return tr;
+        }
+
+        document.getElementById("reset").click(function (e) {
+  
+            e.preventDefault();
+            reset();
+        })
+  
+        
+        document.forms["passengerForm"].addEventListener("submit", e => {
+            e.preventDefault();
+            const form = document.forms["passengerForm"];
+            const id = form.elements["id"].value;
+            const firstname = form.elements["firstname"].value;
+            const lastname =  form.elements["lastname"].value;
+            const age = form.elements["age"].value;
+            const phone = form.elements["phone"].value;
+            const type = form.elements["type"].value;
+            if (id == 0){
+                CreatePassenger(firstname, lastname, age, phone, type);
+            }
+            else{
+                EditPassenger(id, firstname, lastname, age, phone, type);
+
+            }
+        });
+  
+        GetPassengers();
+    </script>
+</body>
+</html>
