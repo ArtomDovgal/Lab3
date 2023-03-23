@@ -49,11 +49,9 @@ app.post("/api/passengers", jsonParser, function (req, res) {
     const passenger = {firstname: passengerFirstName, lastname: passengerLastName, age: passengerAge, phone: passengerPhone, type: passengerType};
        
     const collection = req.app.locals.collection;
-    collection.insertOne(passenger, function(err, result){
-               
-        if(err) return console.log(err);
-        res.send(passenger);
-    });
+    collection.insertOne(passenger).then(function(result){
+        res.json(passenger);
+    }).catch((err) => console.log(err));
 });
     
 app.delete("/api/passengers/:id", function(req, res){
@@ -80,13 +78,11 @@ app.put("/api/passengers", jsonParser, function (req, res) {
     const collection = req.app.locals.collection;
     collection.findOneAndUpdate({ _id: id }, 
         { $set: {firstname: passengerFirstName, lastname: passengerLastName, age: passengerAge, phone: passengerPhone, type: passengerType} },
-        { returnDocument: 'after' }, function (err, result) {
-
-            if (err) return console.log(err);
-            const passneger = result.value;
-            res.send(passneger);
-        });
-});
+        { returnDocument: 'after' }).then(function(result){   
+            const  passenger = result.value;
+            res.send(passenger);
+        }).catch((err) => console.log(err));
+    });
  
 process.on("SIGINT", () => {
     dbClient.close();
