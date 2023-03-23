@@ -78,8 +78,8 @@ app.put("/api/passengers", jsonParser, function (req, res) {
     const collection = req.app.locals.collection;
     collection.findOneAndUpdate({ _id: id }, 
         { $set: {firstname: passengerFirstName, lastname: passengerLastName, age: passengerAge, phone: passengerPhone, type: passengerType} },
-        { returnDocument: 'after' }).then(function(result){   
-            const  passenger = result.value;
+        { returnNewDocument: true },).then(function(result){   
+            const  passenger = result.returnNewDocument;
             res.send(passenger);
         }).catch((err) => console.log(err));
     });

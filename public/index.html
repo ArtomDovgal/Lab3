@@ -53,11 +53,10 @@
                 headers: { "Accept": "application/json" }
             });
             if (response.ok === true) {
-                // получаем данные
                 const passengers = await response.json();
                 let rows = document.querySelector("tbody"); 
                 passengers.forEach(passenger => {
-                    // добавляем полученные элементы в таблицу
+
                     rows.append(row(passenger));
                 });
             }
@@ -97,6 +96,7 @@
                 const passenger = await response.json();
                 reset();
                 document.querySelector("tbody").append(row(passenger));
+                
             }
         }
 
@@ -109,14 +109,15 @@
                     firstname: passengerFirstName,
                     lastname: passengerLastName,
                     age: parseInt(passengerAge, 10),
-                    phone: parseInt(passengerPhone, 12),
+                    phone: parseInt(passengerPhone, 10),
                     type: passengerType
                 })
             });
             if (response.ok === true) {
-                const passenger = await response.text();
+                const passenger = await response.json();
                 reset();
                 document.querySelector("tr[data-rowid='" + passenger._id + "']").replaceWith(row(passenger));
+                location.reload();
             }
         }
 
@@ -195,11 +196,15 @@
             return tr;
         }
 
-        document.getElementById("reset").click(function (e) {
-  
+        // document.getElementById("reset").click(function (e) {
+        //     e.preventDefault();
+        //     reset();
+        // })
+        document.forms["passengerForm"].addEventListener("reset", e => {
             e.preventDefault();
+            const form = document.forms["passengerForm"].reset();
             reset();
-        })
+        });
   
         
         document.forms["passengerForm"].addEventListener("submit", e => {
