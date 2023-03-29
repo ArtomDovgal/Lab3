@@ -114,10 +114,9 @@
                 })
             });
             if (response.ok === true) {
-                const passenger = await response.json();
                 reset();
-                document.querySelector("tr[data-rowid='" + passenger._id + "']").replaceWith(row(passenger));
                 location.reload();
+                
             }
         }
 
@@ -196,15 +195,15 @@
             return tr;
         }
 
-        // document.getElementById("reset").click(function (e) {
-        //     e.preventDefault();
-        //     reset();
-        // })
-        document.forms["passengerForm"].addEventListener("reset", e => {
+        document.getElementById("reset").click(function (e) {
             e.preventDefault();
-            const form = document.forms["passengerForm"].reset();
             reset();
-        });
+        })
+        // document.forms["passengerForm"].addEventListener("reset", e => {
+        //     e.preventDefault();
+        //     const form = document.forms["passengerForm"].reset();
+        //     reset();
+        // });
   
         
         document.forms["passengerForm"].addEventListener("submit", e => {
